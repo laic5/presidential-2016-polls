@@ -32,3 +32,7 @@ summary(florida$grade)
 recent = subset(florida, startdate > "2016-08-08")
 
 ggplot(recent, aes(startdate, adjpoll_clinton)) + geom_line(color = "blue") + geom_line(aes(startdate, adjpoll_trump), color = "red") + facet_grid(grade ~ .)
+
+
+sum(florida$poll_wt * florida$rawpoll_clinton/100)
+sum(florida$poll_wt * florida$rawpoll_trump/100) # notice how Trump's is smaller
