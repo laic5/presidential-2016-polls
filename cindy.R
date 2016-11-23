@@ -1,7 +1,10 @@
 setwd("C:/Users/Cindy/Documents/Davis/JUNIOR/STA 141A/project")
 
 library(tidyverse)
+<<<<<<< HEAD
 library(plyr)
+=======
+>>>>>>> b7f3089e98b2a67ff9d0002e98b878015ea90468
 
 dat = read.csv("president_general_polls_2016.csv")
 summary(dat)
@@ -32,6 +35,7 @@ summary(florida$grade)
 # close up to after August
 recent = subset(florida, startdate > "2016-08-08")
 
+<<<<<<< HEAD
 ggplot(recent, aes(startdate, adjpoll_clinton)) + geom_line(color = "blue") + geom_line(aes(startdate, adjpoll_trump), color = "red") + facet_grid(grade ~ .)
 
 
@@ -59,3 +63,6 @@ state.mean = ldply(states.list, function(stat) {
   })
 
 state.mean[which(state.mean$V2 >= 50 | state.mean$V3 >= 50 | state.mean $V4 >= 50),1]
+=======
+ggplot(recent, aes(startdate, adjpoll_clinton)) + geom_line(color = "blue") + geom_line(aes(startdate, adjpoll_trump), color = "red") + facet_grid(grade ~ .)
+>>>>>>> b7f3089e98b2a67ff9d0002e98b878015ea90468
