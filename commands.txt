@@ -1,9 +1,10 @@
 Basic command line for git.
 
-## Set up
+## Set up git
 git config --global user.name "Your name" // Does not need to match your Github username.
 git config --global user.email abc@example.com // Must match Github email.
 
+## Set up folder
 First, 'cd' to your local computer folder where you want to keep your copy of repository.
 Then run command 'git init' to initilize git.
 To clone the existing repo from online, run 'git clone https://github.com/laic5/presidential-2016-polls.git'
