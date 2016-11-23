@@ -10,9 +10,16 @@ attach(data)
 polls_plus <- subset(data, type == "polls-plus", select = -c(type, rawpoll_clinton, rawpoll_johnson, rawpoll_mcmullin, rawpoll_trump))
 polls_only <- subset(data, type == "polls-only", select = -c(type, rawpoll_clinton, rawpoll_johnson, rawpoll_mcmullin, rawpoll_trump))
 now_cast   <- subset(data, type == "now-cast"  , select = -c(type, rawpoll_clinton, rawpoll_johnson, rawpoll_mcmullin, rawpoll_trump))
-raw_polls  <- subset(data, select = -c(type, adjpoll_clinton, adjpoll_johnson, adjpoll_mcmullin, adjpoll_trump))[1:(nrow(data)/length(levels(type))),]
 
+raw_polls  <- subset(data, select = -c(type, adjpoll_clinton, adjpoll_johnson, adjpoll_mcmullin, adjpoll_trump))[1:(nrow(data)/length(levels(type))),]
+raw_second <- subset(data, select = -c(type, adjpoll_clinton, adjpoll_johnson, adjpoll_mcmullin, adjpoll_trump))[4209:(4208*2),]
+raw_third  <- subset(data, select = -c(type, adjpoll_clinton, adjpoll_johnson, adjpoll_mcmullin, adjpoll_trump))[(4208*2+1):(4208*3),]
 ##################################################
+all(raw_second == raw_third, na.rm = TRUE)
+nrow(raw_polls)
+nrow(raw_second)
+nrow(raw_third)
+table(raw_polls["rawpoll_clinton"] == raw_second["rawpoll_clinton"])
 
 # Exploratory Scratch
 
