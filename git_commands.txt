@@ -1,0 +1,18 @@
+Basic commands for using git through command line.
+
+## Configure settings
+git config --global user.name "Your Name" // Does not have to match your Github username. Just your name is fine.
+git config --global user.email abc@example.com // Must match Github email.
+
+## One time setup
+First, 'cd' to local folder on computer that you will use for keeping your own copy of the repository.
+Then, use command 'git init' to initilize git.
+Clone the existing repo by running 'git clone https://github.com/laic5/presidential-2016-polls.git'
+
+Now, edit files or folders as you wish. This will be reflected locally. To push:
+
+## Repeated commands
+git add -A // This will add all changed files to staging.
+git commit -m "Type a note here about the update" // Commit the changes.
+// Double check if repo has changed since you last pulled. If no changes, just run the push command.
+git push -f https://github.com/laic5/presidential-2016-polls.git master
