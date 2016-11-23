@@ -1,1 +1,1 @@
-STA 141A Final Project
+##STA 141A Final ProjectThis repo was created for STA 141A final project. This project analyzes the 2016 US Presidential Election results with R.
