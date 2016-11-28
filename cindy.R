@@ -4,7 +4,8 @@ library(tidyverse)
 library(plyr)
 
 
-dat = read.csv("president_general_polls_2016.csv")
+dat = read.csv("./datasets/president_general_polls_2016.csv")
+elec.col = read.csv("./datasets/electoral_college.csv", header = F)
 summary(dat)
 
 unique(dat$state)
@@ -42,12 +43,17 @@ sum(florida$poll_wt * florida$rawpoll_clinton/100)
 sum(florida$poll_wt * florida$rawpoll_trump/100) # notice how Trump's is smaller
 
 
+## START ##
+
 good = dat[which(dat$grade == c("A", "A+", "A-")),]
 
 states.list = as.vector(unique(dat$state))
-iowa = good[which(dat$state == "Maine CD-1"),]
-only =  iowa[which(iowa$type == "polls-only"),]
 
+maine = good[which(dat$state == "Maine CD-1"),]
+only =  maine[which(maine$type == "polls-only"),]
+fsd = only$adjpoll_trump; fsd
+
+mean(only$adjpoll_trump, na.rm = T)
 
 
 state.mean.clinton = ldply(states.list, function(stat) {
@@ -61,7 +67,7 @@ state.mean.clinton = ldply(states.list, function(stat) {
   
   })
 
-state.mean[which(state.mean$V2 >= 50 | state.mean$V3 >= 50 | state.mean $V4 >= 50),1]
+state.mean.clinton[which(state.mean.clinton$V2 >= 50 | state.mean.clinton$V3 >= 50 | state.mean.clinton $V4 >= 50),1]
 
 
 state.mean.trump = ldply(states.list, function(stat) {
@@ -76,4 +82,5 @@ state.mean.trump = ldply(states.list, function(stat) {
 })
 
 
-state.mean[which(state.mean.clinton$V2 >= state.mean.trump$V2 | state.mean.clinton$V3 >= state.mean.trump$V3 | state.mean.clinton$V4 >= state.mean.trump$V4),1]
+state.mean.clinton[which(state.mean.clinton$V2 >= state.mean.trump$V2 | state.mean.clinton$V3 >= state.mean.trump$V3 | state.mean.clinton$V4 >= state.mean.trump$V4),1]
+
