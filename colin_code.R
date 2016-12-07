@@ -36,15 +36,15 @@ results <- read.csv("Documents/presidential-2016-polls/datasets/actual_votes_by_
 # Clean data for usablility
 results <- sapply(results, gsub, pattern = ",", replacement = "" )
 state <- as.data.frame(results[,1]); names(state) <- "state"
-trump_count <- as.numeric(results[,2])
+trump_count   <- as.numeric(results[,2])
 clinton_count <- as.numeric(results[,3])
-total_count <- as.numeric(results[,4])
+total_count   <- as.numeric(results[,4])
 
 # Get the percentages for the raw results
 results <- cbind(state, trump_count, clinton_count, total_count)
-trump_per <- results[2]/results[4]
+trump_per   <- results[2]/results[4]
 clinton_per <- results[3]/results[4]
-actual_per <- cbind(results$state, trump_per, clinton_per); names(actual_per)[1] = "state"
+actual_per  <- cbind(results$state, trump_per, clinton_per); names(actual_per)[1] = "state"
 names(actual_per)[2:3] <- c("per_trump", "per_clinton")
 
 ##################################################
@@ -56,10 +56,10 @@ library(plyr)
 # returns a data frame contaning the difference of poll percentages by state
 get.state.difference <- function(polls, raw = FALSE) {
   # Get rid of congressional districts to match states in the actual_votes_by_party data frame
-  polls      <- polls[which(polls$state != "Maine CD-1")   ,]
-  polls      <- polls[which(polls$state != "Maine CD-2")   ,]
-  polls      <- polls[which(polls$state != "Nebraska CD-1"),]
-  polls      <- polls[which(polls$state != "Nebraska CD-2"),]
+  polls        <- polls[which(polls$state != "Maine CD-1")   ,]
+  polls        <- polls[which(polls$state != "Maine CD-2")   ,]
+  polls        <- polls[which(polls$state != "Nebraska CD-1"),]
+  polls        <- polls[which(polls$state != "Nebraska CD-2"),]
   polls_no_CD  <- polls[which(polls$state != "Nebraska CD-3"),]
   # ポルソノシヂ！！！
   
@@ -89,6 +89,35 @@ get.state.difference <- function(polls, raw = FALSE) {
   difference_state <- cbind(state, diff_trump, diff_clinton)
   difference_state$state <- sort(unique(polls_no_CD$state))
   difference_state
+}
+
+get.state.means <- function(polls, raw = FALSE) {
+  # Get rid of congressional districts to match states in the actual_votes_by_party data frame
+  polls        <- polls[which(polls$state != "Maine CD-1")   ,]
+  polls        <- polls[which(polls$state != "Maine CD-2")   ,]
+  polls        <- polls[which(polls$state != "Nebraska CD-1"),]
+  polls        <- polls[which(polls$state != "Nebraska CD-2"),]
+  polls_no_CD  <- polls[which(polls$state != "Nebraska CD-3"),]
+  # ポルソノシヂ！！！
+  
+  # Make naming constistent
+  actual_per$state <- sort(unique(polls_no_CD$state))
+  
+  # Poll_data the function uses depends on if user specified if the poll was raw or not; default: FALSE
+  if(raw == TRUE) {
+    avg_trump   <- ddply(polls_no_CD, .(polls_no_CD$state), summarize, mean = mean(rawpoll_trump)  /100)
+    avg_clinton <- ddply(polls_no_CD, .(polls_no_CD$state), summarize, mean = mean(rawpoll_clinton)/100)
+  } else {
+    avg_trump   <- ddply(polls_no_CD, .(polls_no_CD$state), summarize, mean = mean(adjpoll_trump)  /100)
+    avg_clinton <- ddply(polls_no_CD, .(polls_no_CD$state), summarize, mean = mean(adjpoll_clinton)/100)
+  }
+  
+  names(avg_trump)   <- c("state",   "avg_per_trump")
+  names(avg_clinton) <- c("state", "avg_per_clinton")
+  
+  # Merge the data frames made
+  avg_polls <- merge(avg_trump, avg_clinton, by = "state")
+  avg_polls
 }
 
 pps_difference <- get.state.difference(polls_plus_state, raw = FALSE)
