@@ -4,8 +4,6 @@ library(ggplot2)
 ### STATE LEVEL VISUALIZATIONS
 
 ### PPS MEANS
-# pps_means = get.state.means(polls_plus_state, raw = FALSE)
-
 mean_bools <- pps_means$avg_per_trump > pps_means$avg_per_clinton
 state_colors <- sapply(mean_bools, function(bools) {
   if(bools == TRUE) {"red"}
@@ -31,8 +29,6 @@ pps_map
 
 
 ### RPS MEANS
-# rps_means = get.state.means(raw_plus_state, raw = TRUE)
-
 mean_bools_2 <- pps_means$avg_per_trump > pps_means$avg_per_clinton
 state_colors_2 <- sapply(mean_bools, function(bools) {
   if(bools == TRUE) {"red"}
@@ -57,7 +53,6 @@ rps_map
 
 
 ### PPS DIFFERENCE
-# pps_difference <- get.state.difference(polls_plus_state, raw = FALSE)
 all_states = levels(pps_difference[,1])[pps_difference[,1]]
 all_states[!all_states %in% c("District of Columbia")]
 
@@ -86,7 +81,6 @@ pps_diff_map
 
 
 ### RPS DIFFERENCE
-# rps_difference <- get.state.difference(raw_plus_state  , raw = TRUE )
 all_states = levels(rps_difference[,1])[rps_difference[,1]]
 all_states[!all_states %in% c("District of Columbia")]
 
@@ -111,51 +105,3 @@ rps_diff_map = rps_diff_map + geom_polygon(data=new_df, aes(x=long, y=lat, group
 rps_diff_map = rps_diff_map + ggtitle("Prediction Inaccuracy per State (Raw Polls)") + xlab("longitude") + ylab("latitude") + theme(plot.title = element_text(family = "Helvetica Neue", color="black", size=20, hjust=0, face="bold")) + theme(axis.title = element_text(family = "Helvetica Neue", color="black", size=14))
 rps_diff_map = rps_diff_map + theme(panel.background = element_rect(fill = "white"))
 rps_diff_map
-
-
-# # not so informative:
-# ### NATIONAL LEVEL VISUALIZATIONS
-# 
-# # Get the national percentages from the adjusted polls
-# trump_ppn_mean      <- mean(polls_plus_nation$adjpoll_trump)
-# clinton_ppn_mean    <- mean(polls_plus_nation$adjpoll_clinton)
-# 
-# natl_ppn_mean_map = ggplot()
-# natl_ppn_mean_map = pps_map + geom_polygon(data=usa_blue, aes(x=long, y=lat, group = group), colour="white", size=0.5, fill=alpha("darkblue", 0.5))
-# natl_ppn_mean_map = pps_map + geom_polygon(data=usa_red, aes(x=long, y=lat, group = group), colour="white", size=0.5, fill=alpha("darkred", 0.5))
-# natl_ppn_mean_map = natl_ppn_mean_map + geom_polygon(data=all_states_md, aes(x=long, y=lat, group=group), colour="white", fill=alpha("darkblue", 0.3), size=0.05)
-# natl_ppn_mean_map = natl_ppn_mean_map + theme(panel.background = element_rect(fill = "white"))
-# natl_ppn_mean_map
-# 
-# 
-# 
-# # raw stuffs
-# trump_rpn_mean      <- mean(raw_plus_nation$rawpoll_trump)
-# clinton_rpn_mean    <- mean(raw_plus_nation$rawpoll_clinton)
-# 
-# natl_rpn_mean_map = ggplot()
-# natl_rpn_mean_map = rps_map + geom_polygon(data=usa_blue, aes(x=long, y=lat, group = group), colour="white", size=0.5, fill="darkblue")
-# natl_rpn_mean_map = rps_map + geom_polygon(data=usa_red, aes(x=long, y=lat, group = group), colour="white", size=0.5, fill="darkred")
-# natl_rpn_mean_map = natl_rpn_mean_map + geom_polygon(data=all_states_md, aes(x=long, y=lat, group=group), colour="white", fill=alpha("darkblue", 0.3), size=0.05)
-# natl_rpn_mean_map = natl_rpn_mean_map + theme(panel.background = element_rect(fill = "white"))
-# natl_rpn_mean_map
-
-
-# ## purple maps for raw
-# natl_map = ggplot()
-# natl_map = natl_map + geom_polygon(data=all_states_md, aes(x=long, y=lat, group=group), colour="white", fill=alpha("darkblue", 0.4398), size=0.05)
-# natl_map = natl_map + geom_polygon(data=all_states_md, aes(x=long, y=lat, group=group), colour="white", fill=alpha("darkred", 0.3), size=0.3963)
-# natl_map = natl_map + theme(panel.background = element_rect(fill = "white"))
-# natl_map
-# 
-# # purple maps for polls plus
-# natl_map_2 = ggplot()
-# natl_map_2 = natl_map_2 + geom_polygon(data=all_states_md, aes(x=long, y=lat, group=group), colour="white", fill=alpha("darkblue", 0.4488), size=0.05)
-# natl_map_2 = natl_map_2 + geom_polygon(data=all_states_md, aes(x=long, y=lat, group=group), colour="white", fill=alpha("darkred", 0.3), size=0.4167)
-# natl_map_2 = natl_map_2 + theme(panel.background = element_rect(fill = "white"))
-# natl_map_2
-
-
-# # Get the differences in percentages of the raw and polls plus adjusted from the actual results
-# ppn_difference <- abs(national_results - national_ppn)
-# rpn_difference <- abs(national_results - national_rpn)
