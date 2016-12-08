@@ -2,12 +2,13 @@ setwd("C:/Users/Cindy/Documents/Davis/JUNIOR/STA 141A/project")
 
 library(tidyverse)
 library(plyr)
+library(reshape2)
 
 
 dat = read.csv("./datasets/president_general_polls_2016.csv")
-elec.col = read.csv("./datasets/electoral_college.csv", header = F)
+
 # add the dates of the major presidential events (speeches, world news, fiascos, debates)
-dates = as.Date(c("2016-09-26", "2016-10-09", "2016-10-19"))
+dates = as.Date(c("2016-09-26", "2016-10-09", "2016-10-19", "2016-07-18", "2016-07-25"))
 
 
 # convert startdate to Date class
@@ -15,11 +16,9 @@ dat$startdate = as.Date(dat$startdate, "%m/%d/%Y")
 dat$enddate = as.Date(dat$enddate, "%m/%d/%Y")
 
 polls = dat[which(dat$type == "polls-plus"),]
-florida = polls[which(polls$state == "Florida"),]
-iowa = polls[which(polls$state == "Iowa"),]
 
-#unique.dates = unique(polls$enddate)
-
+# calculates a weighted average for polls that ended on the same date. 
+# based off poll_wt
 weighted_average = function(dt, ds) {
   date.polls = ds[which(ds$enddate == dt),]
   if(nrow(date.polls) == 1) return (c(date.polls$adjpoll_clinton, date.polls$adjpoll_trump))
@@ -30,58 +29,49 @@ weighted_average = function(dt, ds) {
   return(c(avg.clinton, avg.trump))
 }
 
-weighted_average("2016-01-07", iowa)
+# calculates new weighted polls for each unique date in a state
 weighted_state = function(sta) {
   state.polls = polls[which(polls$state == sta),]
   unique.dates = unique(state.polls$enddate)
   new.df = ldply(unique.dates, function(date){ 
     new.percents = weighted_average(date, state.polls)
-    c(as.character(date), new.percents)
+    c(sta, as.character(date), new.percents)
     })
+  colnames(new.df) = c("state", "Date", "adjpoll_clinton", "adjpoll_trump")
+  new.df$Date = as.Date(new.df$Date)
+  new.df$adjpoll_clinton = as.double(new.df$adjpoll_clinton)
+  new.df$adjpoll_trump = as.double(new.df$adjpoll_trump)
   return (new.df)
 } 
 
+
+# EXAMINING SWING STATES
 new.florida = weighted_state("Florida")
+new.michigan = weighted_state("Michigan")
+new.ohio = weighted_state("Ohio")
+new.penn = weighted_state("Pennsylvania")
 
-# weighted.polls = ldply(unique.dates, function(date) {
-#   new.percents = as.character(weighted_average(date))
-#   return (c(as.character(date), new.percents))
-# })
-
-
-# florida = weighted.polls[which(polls$state == "Florida"),]
-# summary(florida$startdate)
-
-
-# looking at clinton raw vs. adjusted polls over time
-florida_time = ggplot(florida, aes(startdate, rawpoll_clinton, adjpoll_clinton)) + geom_line(aes(startdate, rawpoll_clinton), color = "grey") + geom_line(aes(startdate, adjpoll_clinton), color = "blue") + scale_x_date() + ggtitle("Florida Polls for Clinton over time: Raw vs. Adjusted %"); florida_time
-# raw is a lot more extreme
-
-
+# plotting function for Clinton vs. Trump with the presidential debates
+plotpolls = function(dat) {
+  ggplot(dat, aes(Date, adjpoll_clinton)) + geom_line(aes(Date, adjpoll_trump), color = "black", size = .75) + geom_line(aes(Date, adjpoll_clinton), color = "cornflowerblue", size = 0.75, linetype = "F1") + 
+    geom_vline(aes(xintercept=as.numeric(dates[1])), linetype=4, colour="black") + 
+    geom_vline(aes(xintercept=as.numeric(dates[2])), linetype=4, colour="black") + 
+    geom_vline(aes(xintercept=as.numeric(dates[3])), linetype=4, colour="black") +
+    geom_vline(aes(xintercept=as.numeric(dates[4])), linetype="dotted", colour="red") +
+    geom_vline(aes(xintercept=as.numeric(dates[5])), linetype="dotted", colour="blue") +
+    ggtitle(paste(c(dat$state[1], "Trump (Black) vs. Clinton (Dashed)"), collapse = " "))
+}
 
 
-# adjust polls for clinton and trump over time
-florida_trump.vs.clinton = ggplot(florida, aes(startdate, rawpoll_clinton, adjpoll_clinton)) + geom_line(aes(startdate, adjpoll_clinton), color = "blue") + geom_line(aes(startdate, adjpoll_trump), color = "red") + scale_x_date(); florida_trump.vs.clinton + ggtitle("Florida Clinton vs. Trump over Time")
-# a lot more noise starting from September
-
-# close up to after August
-recent = subset(florida, startdate > "2016-09-01")
+plotpolls(new.florida)
+plotpolls(new.ohio)
+plotpolls(new.michigan)
+plotpolls(new.penn)
 
 
-# Compare startdate vs. enddate. Is there a difference?
-ggplot(recent, aes(startdate, adjpoll_clinton)) + geom_line(color = "blue") + geom_line(aes(startdate, adjpoll_trump), color = "red") + ggtitle("Florida Clinton vs. Trump Polls Sept 1 - Nov 6")
+## taking a closer look at recent polls (after Sept 1)
 
-#ggplot(recent, aes(enddate, adjpoll_clinton)) + geom_line(color = "blue") + geom_line(aes(enddate, adjpoll_trump), color = "red")
-
-which.min(recent$adjpoll_clinton) # 97
-# look into this!! what happened around this time?
-
-
-
-ggplot(recent, aes(enddate, adjpoll_clinton)) + geom_line(color = "blue", size = 0.75) + geom_line(aes(enddate, adjpoll_trump), color = "red", size = .75) + ggtitle("Florida Clinton vs. Trump Polls Sept 1 - Nov 6") + 
-  geom_vline(aes(xintercept=as.numeric(dates[1])), linetype=4, colour="black") + 
-  geom_vline(aes(xintercept=as.numeric(dates[2])), linetype=4, colour="black") + 
-  geom_vline(aes(xintercept=as.numeric(dates[3])), linetype=4, colour="black")
-
-
-ggplot(subset(recent, startdate > "2016-10-10"), aes(startdate, adjpoll_clinton)) + geom_line(color = "blue") + geom_line(aes(startdate, adjpoll_trump), color = "red")
+plotpolls(new.florida[which(new.florida$Date > "2016-09-01"),])
+plotpolls(new.ohio[which(new.ohio$Date > "2016-09-01"),])
+plotpolls(new.michigan[which(new.michigan$Date > "2016-09-01"),])
+plotpolls(new.penn[which(new.penn$Date > "2016-09-01"),])
