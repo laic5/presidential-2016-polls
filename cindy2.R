@@ -62,6 +62,16 @@ plotpolls = function(dat) {
     ggtitle(paste(c(dat$state[1], "Trump (Black) vs. Clinton (Dashed)"), collapse = " "))
 }
 
+prettyplot = function(dat) {
+  ggplot(dat, aes(Date, adjpoll_clinton)) + geom_line(aes(Date, adjpoll_trump), color = "red", size = .75) + geom_line(aes(Date, adjpoll_clinton), color = "blue", size = 0.75) + 
+    geom_vline(aes(xintercept=as.numeric(dates[1])), linetype=4, colour="black") + 
+    geom_vline(aes(xintercept=as.numeric(dates[2])), linetype=4, colour="black") + 
+    geom_vline(aes(xintercept=as.numeric(dates[3])), linetype=4, colour="black") +
+    geom_vline(aes(xintercept=as.numeric(dates[4])), linetype="dotted", colour="red") +
+    geom_vline(aes(xintercept=as.numeric(dates[5])), linetype="dotted", colour="blue") +
+    ggtitle(paste(c(dat$state[1], "Trump (Red) vs. Clinton (Blue)"), collapse = " "))
+}
+
 plotpolls(new.florida)
 plotpolls(new.ohio)
 plotpolls(new.michigan)
@@ -81,3 +91,7 @@ plotpolls(new.penn[which(new.penn$Date > "2016-09-01"),])
 new.ca = weighted_state("California")
 plotpolls(new.ca)
 plotpolls(new.ca[which(new.ca$Date > "2016-09-01"),])
+
+prettyplot(new.ca[which(new.ca$Date > "2016-09-01"),])
+prettyplot(new.florida)
+prettyplot(new.florida[which(new.florida$Date > "2016-09-01"),])
