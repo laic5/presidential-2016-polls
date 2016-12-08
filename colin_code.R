@@ -1,11 +1,10 @@
 # STA141A Project Code
-# Colin P. Santos 
-# Start 11.20.16
-# Current 12.4.16
+# Cynthia Lai, Edie Espejo, Colin Santos, David Fung
+
 ##################################################
 ## Subsetting the Data
 ##################################################
-data <- read.csv("Desktop/project_data.csv")
+data <- read.csv("./datasets/president_general_polls_2016.csv")
 attach(data)
 
 # Here are the dataframes sorted by adjustment types and raw
@@ -31,8 +30,7 @@ detach(data)
 ##################################################
 ## Preparing Actual Vote Count Data
 ##################################################
-results <- read.csv("Documents/presidential-2016-polls/datasets/actual_votes_by_party.csv")
-# LMAO David why y u make dataset with non-numerics
+results <- read.csv("./datasets/actual_votes_by_party.csv")
 # Clean data for usablility
 results <- sapply(results, gsub, pattern = ",", replacement = "" )
 state <- as.data.frame(results[,1]); names(state) <- "state"
@@ -149,100 +147,215 @@ names(national_rpn) <- c("trump_percent", "clinton_percent")
 ppn_difference <- abs(national_results - national_ppn)
 rpn_difference <- abs(national_results - national_rpn)
 
-# polls_plus_state  <- polls_plus_state[which(polls_plus_state$state != "Maine CD-1")   ,]
-# polls_plus_state  <- polls_plus_state[which(polls_plus_state$state != "Maine CD-2")   ,]
-# polls_plus_state  <- polls_plus_state[which(polls_plus_state$state != "Nebraska CD-1"),]
-# polls_plus_state  <- polls_plus_state[which(polls_plus_state$state != "Nebraska CD-2"),]
-# polls_no_CD         <- polls_plus_state[which(polls_plus_state$state != "Nebraska CD-3"),]
-# # ピピエスノシヂ！！！
-# 
-# # Make naming constistent
-# actual_per$state <- sort(unique(polls_no_CD$state))
-# 
-# avg_trump   <- ddply(polls_no_CD, .(polls_no_CD$state), summarize, mean = mean(adjpoll_trump)  /100)
-# avg_clinton <- ddply(polls_no_CD, .(polls_no_CD$state), summarize, mean = mean(adjpoll_clinton)/100)
-# 
-# names(avg_trump)   <- c("state",   "avg_per_trump")
-# names(avg_clinton) <- c("state", "avg_per_clinton")
-# 
-# avg_polls <-  merge(avg_trump, avg_clinton, by = "state")
-# ##################################################
-# 
-# diff_trump   <- abs(actual_per$per_trump   - avg_polls$avg_per_trump  )
-# diff_clinton <- abs(actual_per$per_clinton - avg_polls$avg_per_clinton)
-# 
-# accuracy_state <- cbind(state, diff_trump, diff_clinton)
-# accuracy_state$state <- sort(unique(polls_no_CD$state))
-
-
-
-
-# all(raw_second == raw_third, na.rm = TRUE)
-# nrow(raw_first)
-# nrow(raw_second)
-# nrow(raw_third)
-# table(raw_first["rawpoll_clinton"] == raw_second["rawpoll_clinton"])
-# 
-# # Exploratory Scratch
-# 
-# state[14]
-# state[19]
-# astate[8]
-# state[9] #New Mexico
-# data$state[9]
-# state[10]
-# state[151] #New Mexico
-# which(state == "California")
-# which(state == "New Mexico")
-# which(state == levels(state)[5])
-# which(state == levels(state)[37])
-# levels(state)[37]
-# 
-# nrow(data)
-# head
-# 
-# attach(data)
-# levels(branch)
-# levels(as.factor(cycle))
-# levels(type)
-# levels(matchup)
-# levels(forecastdate)
-# levels(grade)
-# ncol(data)
-# levels(multiversions)
-# levels(timestamp)
-# length(grade)
-# levels(pollster)
-# levels(state)
-# length(levels(state)) #57 "state"s
-# us_congression
-# library(USAboundaries)
-# plot(us_congressional())
-# va_congressional <- us_congressional(states="california")
-# if (require(sp)) {
-#   plot(va_congressional)
-# }
-# 
-# head(data)
-# data[9,]
-# data$state[9]
-# data$state
-# as.character(data$state)
-# table(as.character(data$state))
-# 
-# sort(table(data$state))
-# 
-# as.list(sort(table(as.character(data$state))))
-# 
-# library(lattice)
-# ?lattice
-# xyplot(sort(table(as.character(data$state))))
-# xyplot(y=sort(table(as.character(data$state))))
-# plot(sort(table(as.character(data$state))))
-
-
-
 ##################################################
+## State Level Visualizations
+##################################################
+library(ggplot2)
+
+# PPS MEANS (Polls-plus State)
+# pps_means = get.state.means(polls_plus_state, raw = FALSE)
+
+mean_bools <- pps_means$avg_per_trump > pps_means$avg_per_clinton
+state_colors <- sapply(mean_bools, function(bools) {
+  if(bools == TRUE) {"red"}
+  else {"blue"}
+})
+state_colors <- cbind(as.character(pps_means$state), state_colors )
+blue_states <- state_colors[which(state_colors[,2] == "blue")]
+red_states = state_colors[which(state_colors[,2] == "red")]
+
+# load us map data
+usa_blue = map_data("state", region=blue_states)
+usa_red = map_data("state", region=red_states)
+
+# plot all states with ggplot
+pps_map = ggplot()
+pps_map = pps_map + geom_polygon(data=usa_blue, aes(x=long, y=lat, group = group), colour="white", size=0.5, fill="darkblue")
+pps_map = pps_map + geom_polygon(data=usa_red, aes(x=long, y=lat, group = group), colour="white", size=0.5, fill="darkred")
+pps_map = pps_map + ggtitle("2016 Presidential Election - Polls Plus") + xlab("longitude") + ylab("latitude") + theme(plot.title = element_text(family = "Helvetica Neue", color="black", size=25, hjust=0, face="bold")) + theme(axis.title = element_text(family = "Helvetica Neue", color="black", size=14))
+pps_map = pps_map + theme(panel.background = element_rect(fill = "white"))
+pps_map
+
+
+# RPS MEANS
+# rps_means = get.state.means(raw_plus_state, raw = TRUE)
+
+mean_bools_2 <- pps_means$avg_per_trump > pps_means$avg_per_clinton
+state_colors_2 <- sapply(mean_bools, function(bools) {
+  if(bools == TRUE) {"red"}
+  else {"blue"}
+})
+state_colors_2 <- cbind(as.character(pps_means$state), state_colors )
+blue_states_2 <- state_colors[which(state_colors[,2] == "blue")]
+red_states_2 = state_colors[which(state_colors[,2] == "red")]
+
+# load us map data
+usa_blue_2 = map_data("state", region=blue_states_2)
+usa_red_2 = map_data("state", region=red_states_2)
+
+# plot all states with ggplot
+rps_map = ggplot()
+rps_map = rps_map + geom_polygon(data=usa_blue_2, aes(x=long, y=lat, group = group), colour="white", size=0.5, fill="darkblue")
+rps_map = rps_map + geom_polygon(data=usa_red_2, aes(x=long, y=lat, group = group), colour="white", size=0.5, fill="darkred")
+rps_map = rps_map + ggtitle("2016 Presidential Election - Raw Polls") + xlab("longitude") + ylab("latitude") + theme(plot.title = element_text(family = "Helvetica Neue", color="black", size=25, hjust=0, face="bold")) + theme(axis.title = element_text(family = "Helvetica Neue", color="black", size=14))
+rps_map = rps_map + theme(panel.background = element_rect(fill = "white"))
+rps_map
+
+# PPS DIFFERENCE
+# pps_difference <- get.state.difference(polls_plus_state, raw = FALSE)
+all_states = levels(pps_difference[,1])[pps_difference[,1]]
+all_states[!all_states %in% c("District of Columbia")]
+
+# load us map data
+all_states_md = map_data("state", region=all_states)
+
+new_df = cbind(all_states_md, c(1:length(all_states_md$region)), c(1:length(all_states_md$region)))
+names(new_df)[7] = "trump"
+names(new_df)[8] = "clinton"
+
+for(i in 1:length(all_states)) {
+  these_indices = which(new_df$region==tolower(all_states[i]))
+  new_df$trump[these_indices] = pps_difference$diff_trump[i]
+  new_df$clinton[these_indices] = pps_difference$diff_clinton[i]
+}
+
+## poll inaccuracy
+#plot all states with ggplot
+pps_diff_map = ggplot()
+# pps_difference$diff_trump
+pps_diff_map = pps_diff_map + geom_polygon(data=new_df, aes(x=long, y=lat, group=group, fill=trump), colour="white", size=0.5) + scale_fill_gradient(low="black", high="orange", name="absolute %\ninaccuracy")
+pps_diff_map = pps_diff_map + ggtitle("Prediction Inaccuracy per State (Polls Plus)") + xlab("longitude") + ylab("latitude") + theme(plot.title = element_text(family = "Helvetica Neue", color="black", size=20, hjust=0, face="bold")) + theme(axis.title = element_text(family = "Helvetica Neue", color="black", size=14))
+pps_diff_map = pps_diff_map + theme(panel.background = element_rect(fill = "white"))
+pps_diff_map
 
 
 
+### RPS DIFFERENCE
+# rps_difference <- get.state.difference(raw_plus_state  , raw = TRUE )
+all_states = levels(rps_difference[,1])[rps_difference[,1]]
+all_states[!all_states %in% c("District of Columbia")]
+
+#load us map data
+all_states_md = map_data("state", region=all_states)
+
+new_df = cbind(all_states_md, c(1:length(all_states_md$region)), c(1:length(all_states_md$region)))
+names(new_df)[7] = "trump"
+names(new_df)[8] = "clinton"
+
+for(i in 1:length(all_states)) {
+  these_indices = which(new_df$region==tolower(all_states[i]))
+  new_df$trump[these_indices] = pps_difference$diff_trump[i]
+  new_df$clinton[these_indices] = pps_difference$diff_clinton[i]
+}
+
+## poll inaccuracy
+#plot all states with ggplot
+rps_diff_map = ggplot()
+# pps_difference$diff_trump
+rps_diff_map = rps_diff_map + geom_polygon(data=new_df, aes(x=long, y=lat, group=group, fill=trump), colour="white", size=0.5) + scale_fill_gradient(low="black", high="orange", name="absolute %\ninaccuracy")
+rps_diff_map = rps_diff_map + ggtitle("Prediction Inaccuracy per State (Raw Polls)") + xlab("longitude") + ylab("latitude") + theme(plot.title = element_text(family = "Helvetica Neue", color="black", size=20, hjust=0, face="bold")) + theme(axis.title = element_text(family = "Helvetica Neue", color="black", size=14))
+rps_diff_map = rps_diff_map + theme(panel.background = element_rect(fill = "white"))
+rps_diff_map
+
+
+
+#########################################################################################
+setwd("C:/Users/Cindy/Documents/Davis/JUNIOR/STA 141A/project")
+
+library(tidyverse)
+library(plyr)
+library(reshape2)
+
+
+dat = read.csv("./datasets/president_general_polls_2016.csv")
+
+# add the dates of the major presidential events (speeches, world news, fiascos, debates)
+dates = as.Date(c("2016-09-26", "2016-10-09", "2016-10-19", "2016-07-18", "2016-07-25"))
+
+
+# convert startdate to Date class
+dat$startdate = as.Date(dat$startdate, "%m/%d/%Y")
+dat$enddate = as.Date(dat$enddate, "%m/%d/%Y")
+
+polls = dat[which(dat$type == "polls-plus"),]
+
+# calculates a weighted average for polls that ended on the same date. 
+# based off poll_wt
+weighted_average = function(dt, ds) {
+  date.polls = ds[which(ds$enddate == dt),]
+  if(nrow(date.polls) == 1) return (c(date.polls$adjpoll_clinton, date.polls$adjpoll_trump))
+  weight.sum = sum(date.polls$poll_wt)
+  date.polls$poll_wt = date.polls$poll_wt/weight.sum
+  avg.clinton = sum(date.polls$adjpoll_clinton * date.polls$poll_wt)
+  avg.trump = sum(date.polls$adjpoll_trump * date.polls$poll_wt)
+  return(c(avg.clinton, avg.trump))
+}
+
+# calculates new weighted polls for each unique date in a state
+weighted_state = function(sta) {
+  state.polls = polls[which(polls$state == sta),]
+  unique.dates = unique(state.polls$enddate)
+  new.df = ldply(unique.dates, function(date){ 
+    new.percents = weighted_average(date, state.polls)
+    c(sta, as.character(date), new.percents)
+  })
+  colnames(new.df) = c("state", "Date", "adjpoll_clinton", "adjpoll_trump")
+  new.df$Date = as.Date(new.df$Date)
+  new.df$adjpoll_clinton = as.double(new.df$adjpoll_clinton)
+  new.df$adjpoll_trump = as.double(new.df$adjpoll_trump)
+  return (new.df)
+} 
+
+
+# EXAMINING SWING STATES
+new.florida = weighted_state("Florida")
+new.michigan = weighted_state("Michigan")
+new.ohio = weighted_state("Ohio")
+new.penn = weighted_state("Pennsylvania")
+
+# plotting function for Clinton vs. Trump with the presidential debates
+plotpolls = function(dat) {
+  ggplot(dat, aes(Date, adjpoll_clinton)) + geom_line(aes(Date, adjpoll_trump), color = "black", size = .75) + geom_line(aes(Date, adjpoll_clinton), color = "cornflowerblue", size = 0.75, linetype = "F1") + 
+    geom_vline(aes(xintercept=as.numeric(dates[1])), linetype=4, colour="black") + 
+    geom_vline(aes(xintercept=as.numeric(dates[2])), linetype=4, colour="black") + 
+    geom_vline(aes(xintercept=as.numeric(dates[3])), linetype=4, colour="black") +
+    geom_vline(aes(xintercept=as.numeric(dates[4])), linetype="dotted", colour="red") +
+    geom_vline(aes(xintercept=as.numeric(dates[5])), linetype="dotted", colour="blue") +
+    ggtitle(paste(c(dat$state[1], "Trump (Black) vs. Clinton (Dashed)"), collapse = " "))
+}
+
+prettyplot = function(dat) {
+  ggplot(dat, aes(Date, adjpoll_clinton)) + geom_line(aes(Date, adjpoll_trump), color = "red", size = .75) + geom_line(aes(Date, adjpoll_clinton), color = "blue", size = 0.75) + 
+    geom_vline(aes(xintercept=as.numeric(dates[1])), linetype=4, colour="black") + 
+    geom_vline(aes(xintercept=as.numeric(dates[2])), linetype=4, colour="black") + 
+    geom_vline(aes(xintercept=as.numeric(dates[3])), linetype=4, colour="black") +
+    geom_vline(aes(xintercept=as.numeric(dates[4])), linetype="dotted", colour="red") +
+    geom_vline(aes(xintercept=as.numeric(dates[5])), linetype="dotted", colour="blue") +
+    ggtitle(paste(c(dat$state[1], "Trump (Red) vs. Clinton (Blue)"), collapse = " "))
+}
+
+plotpolls(new.florida)
+plotpolls(new.ohio)
+plotpolls(new.michigan)
+plotpolls(new.penn)
+
+
+## taking a closer look at recent polls (after Sept 1)
+
+plotpolls(new.florida[which(new.florida$Date > "2016-09-01"),])
+plotpolls(new.ohio[which(new.ohio$Date > "2016-09-01"),])
+plotpolls(new.michigan[which(new.michigan$Date > "2016-09-01"),])
+plotpolls(new.penn[which(new.penn$Date > "2016-09-01"),])
+
+
+
+# look at California for contrast
+new.ca = weighted_state("California")
+plotpolls(new.ca)
+plotpolls(new.ca[which(new.ca$Date > "2016-09-01"),])
+
+prettyplot(new.ca[which(new.ca$Date > "2016-09-01"),])
+prettyplot(new.florida)
+prettyplot(new.florida[which(new.florida$Date > "2016-09-01"),])
+
+#####################################################################
