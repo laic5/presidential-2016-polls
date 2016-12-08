@@ -62,7 +62,6 @@ plotpolls = function(dat) {
     ggtitle(paste(c(dat$state[1], "Trump (Black) vs. Clinton (Dashed)"), collapse = " "))
 }
 
-
 plotpolls(new.florida)
 plotpolls(new.ohio)
 plotpolls(new.michigan)
@@ -75,3 +74,10 @@ plotpolls(new.florida[which(new.florida$Date > "2016-09-01"),])
 plotpolls(new.ohio[which(new.ohio$Date > "2016-09-01"),])
 plotpolls(new.michigan[which(new.michigan$Date > "2016-09-01"),])
 plotpolls(new.penn[which(new.penn$Date > "2016-09-01"),])
+
+
+
+# look at California for contrast
+new.ca = weighted_state("California")
+plotpolls(new.ca)
+plotpolls(new.ca[which(new.ca$Date > "2016-09-01"),])
