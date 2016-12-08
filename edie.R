@@ -1,164 +1,3 @@
-# colin's part
-
-##################################################
-## Subsetting the Data
-##################################################
-data <- read.csv("/Users/edie/Box Sync/STA 141A/project/datasets/project_data.csv")
-attach(data)
-
-# Here are the dataframes sorted by adjustment types and raw
-polls_plus <- subset(data, type == "polls-plus", select = -c(type, rawpoll_clinton, rawpoll_johnson, rawpoll_mcmullin, rawpoll_trump))
-polls_only <- subset(data, type == "polls-only", select = -c(type, rawpoll_clinton, rawpoll_johnson, rawpoll_mcmullin, rawpoll_trump))
-now_cast   <- subset(data, type == "now-cast"  , select = -c(type, rawpoll_clinton, rawpoll_johnson, rawpoll_mcmullin, rawpoll_trump))
-
-# Here are the dataframes of rawpoll used for the three poll types
-# Note that only about 1/3 of the raw polls were the same for each poll type
-raw_plus  <- subset(data, select = -c(type, adjpoll_clinton, adjpoll_johnson, adjpoll_mcmullin, adjpoll_trump))[1:(nrow(data)/length(levels(type))),]
-raw_only  <- subset(data, select = -c(type, adjpoll_clinton, adjpoll_johnson, adjpoll_mcmullin, adjpoll_trump))[4209:(4208*2),]
-raw_cast  <- subset(data, select = -c(type, adjpoll_clinton, adjpoll_johnson, adjpoll_mcmullin, adjpoll_trump))[(4208*2+1):(4208*3),]
-
-# poll_plus with just states or just national
-polls_plus_state  <- polls_plus[which(polls_plus$state != "U.S."),]
-polls_plus_nation <- polls_plus[which(polls_plus$state == "U.S."),]
-
-# raw_plus with just states or just national
-raw_plus_state  <- raw_plus[which(raw_plus$state != "U.S."),]
-raw_plus_nation <- raw_plus[which(raw_plus$state == "U.S."),]
-
-detach(data)
-
-##################################################
-## Preparing Actual Vote Count Data
-##################################################
-results <- read.csv("/Users/edie/Box Sync/STA 141A/project/datasets/actual_votes_by_party.csv")
-# LMAO David why y u make dataset with non-numerics
-# Clean data for usablility
-results <- sapply(results, gsub, pattern = ",", replacement = "" )
-state <- as.data.frame(results[,1]); names(state) <- "state"
-trump_count   <- as.numeric(results[,2])
-clinton_count <- as.numeric(results[,3])
-total_count   <- as.numeric(results[,4])
-
-# Get the percentages for the raw results
-results <- cbind(state, trump_count, clinton_count, total_count)
-trump_per   <- results[2]/results[4]
-clinton_per <- results[3]/results[4]
-actual_per  <- cbind(results$state, trump_per, clinton_per); names(actual_per)[1] = "state"
-names(actual_per)[2:3] <- c("per_trump", "per_clinton")
-
-
-##################################################
-## Accuracy of State Polls
-##################################################
-library(plyr)
-
-# This function takes one of the subsets of the data (or the whole), and
-# returns a data frame contaning the difference of poll percentages by state
-get.state.difference <- function(polls, raw = FALSE) {
-  # Get rid of congressional districts to match states in the actual_votes_by_party data frame
-  polls        <- polls[which(polls$state != "Maine CD-1")   ,]
-  polls        <- polls[which(polls$state != "Maine CD-2")   ,]
-  polls        <- polls[which(polls$state != "Nebraska CD-1"),]
-  polls        <- polls[which(polls$state != "Nebraska CD-2"),]
-  polls_no_CD  <- polls[which(polls$state != "Nebraska CD-3"),]
-  # ポルソノシヂ！！！
-  
-  # Make naming constistent
-  actual_per$state <- sort(unique(polls_no_CD$state))
-  
-  # Poll_data the function uses depends on if user specified if the poll was raw or not; default: FALSE
-  if(raw == TRUE) {
-    avg_trump   <- ddply(polls_no_CD, .(polls_no_CD$state), summarize, mean = mean(rawpoll_trump)  /100)
-    avg_clinton <- ddply(polls_no_CD, .(polls_no_CD$state), summarize, mean = mean(rawpoll_clinton)/100)
-  } else {
-    avg_trump   <- ddply(polls_no_CD, .(polls_no_CD$state), summarize, mean = mean(adjpoll_trump)  /100)
-    avg_clinton <- ddply(polls_no_CD, .(polls_no_CD$state), summarize, mean = mean(adjpoll_clinton)/100)
-  }
-  
-  names(avg_trump)   <- c("state",   "avg_per_trump")
-  names(avg_clinton) <- c("state", "avg_per_clinton")
-  
-  # Merge the data frames made
-  avg_polls <- merge(avg_trump, avg_clinton, by = "state")
-  
-  # Find out how different the percentages are
-  diff_trump   <- abs(actual_per$per_trump   - avg_polls$avg_per_trump  ) * 100
-  diff_clinton <- abs(actual_per$per_clinton - avg_polls$avg_per_clinton) * 100
-  
-  # Return results as a data frame
-  difference_state <- cbind(state, diff_trump, diff_clinton)
-  difference_state$state <- sort(unique(polls_no_CD$state))
-  difference_state
-}
-
-get.state.means <- function(polls, raw = FALSE) {
-  # Get rid of congressional districts to match states in the actual_votes_by_party data frame
-  polls        <- polls[which(polls$state != "Maine CD-1")   ,]
-  polls        <- polls[which(polls$state != "Maine CD-2")   ,]
-  polls        <- polls[which(polls$state != "Nebraska CD-1"),]
-  polls        <- polls[which(polls$state != "Nebraska CD-2"),]
-  polls_no_CD  <- polls[which(polls$state != "Nebraska CD-3"),]
-  # ポルソノシヂ！！！
-  
-  # Make naming constistent
-  actual_per$state <- sort(unique(polls_no_CD$state))
-  
-  # Poll_data the function uses depends on if user specified if the poll was raw or not; default: FALSE
-  if(raw == TRUE) {
-    avg_trump   <- ddply(polls_no_CD, .(polls_no_CD$state), summarize, mean = mean(rawpoll_trump)  /100)
-    avg_clinton <- ddply(polls_no_CD, .(polls_no_CD$state), summarize, mean = mean(rawpoll_clinton)/100)
-  } else {
-    avg_trump   <- ddply(polls_no_CD, .(polls_no_CD$state), summarize, mean = mean(adjpoll_trump)  /100)
-    avg_clinton <- ddply(polls_no_CD, .(polls_no_CD$state), summarize, mean = mean(adjpoll_clinton)/100)
-  }
-  
-  names(avg_trump)   <- c("state",   "avg_per_trump")
-  names(avg_clinton) <- c("state", "avg_per_clinton")
-  
-  # Merge the data frames made
-  avg_polls <- merge(avg_trump, avg_clinton, by = "state")
-  avg_polls
-}
-
-pps_difference <- get.state.difference(polls_plus_state, raw = FALSE)
-rps_difference <- get.state.difference(raw_plus_state  , raw = TRUE )
-
-pps_means = get.state.means(polls_plus_state, raw = FALSE)
-rps_difference = get.state.means(raw_plus_state, raw = TRUE)
-
-
-##################################################
-## Accuracy of National Polls
-##################################################
-# Get national percentages from the actual results
-trump_sum   <- sum(results$trump_count  )
-clinton_sum <- sum(results$clinton_count)
-total_sum   <- sum(results$total_count  )
-national_results <- c(trump_sum/total_sum, clinton_sum/total_sum) * 100
-names(national_results) <- c("trump_percent", "clinton_percent")
-
-# Get the national percentages from the adjusted polls
-trump_ppn_mean      <- mean(polls_plus_nation$adjpoll_trump)
-clinton_ppn_mean    <- mean(polls_plus_nation$adjpoll_clinton)
-national_ppn        <- c(trump_ppn_mean, clinton_ppn_mean) 
-names(national_ppn) <- c("trump_percent", "clinton_percent")
-
-# Get the national percentages from the raw polls
-trump_rpn_mean      <- mean(raw_plus_nation$rawpoll_trump)
-clinton_rpn_mean    <- mean(raw_plus_nation$rawpoll_clinton)
-national_rpn        <- c(trump_rpn_mean, clinton_rpn_mean) 
-names(national_rpn) <- c("trump_percent", "clinton_percent")
-
-# Get the differences in percentages of the raw and polls plus adjusted from the actual results
-ppn_difference <- abs(national_results - national_ppn)
-rpn_difference <- abs(national_results - national_rpn)
-
-
-
-
-
-
-
 ### visualizing colin code's code
 library(ggplot2)
 
@@ -235,12 +74,12 @@ for(i in 1:length(all_states)) {
   new_df$clinton[these_indices] = pps_difference$diff_clinton[i]
 }
 
-## Which states were redder than we thought?
+## poll inaccuracy
 #plot all states with ggplot
 pps_diff_map = ggplot()
 # pps_difference$diff_trump
-pps_diff_map = pps_diff_map + geom_polygon(data=new_df, aes(x=long, y=lat, group=group, fill=trump), colour="white", size=0.5) + scale_fill_gradient(low="pink", high="darkred")
-pps_diff_map = pps_diff_map + ggtitle("Which states were redder than we thought? (Polls-Plus)") + xlab("longitude") + ylab("latitude") + theme(plot.title = element_text(family = "Helvetica Neue", color="black", size=20, hjust=0)) + theme(axis.title = element_text(family = "Helvetica Neue", color="black", size=14))
+pps_diff_map = pps_diff_map + geom_polygon(data=new_df, aes(x=long, y=lat, group=group, fill=trump), colour="white", size=0.5) + scale_fill_gradient(low="black", high="orange", name="absolute %\ninaccuracy")
+pps_diff_map = pps_diff_map + ggtitle("Prediction Inaccuracy per State (Raw Polls)") + xlab("longitude") + ylab("latitude") + theme(plot.title = element_text(family = "Helvetica Neue", color="black", size=20, hjust=0, face="bold")) + theme(axis.title = element_text(family = "Helvetica Neue", color="black", size=14))
 pps_diff_map = pps_diff_map + theme(panel.background = element_rect(fill = "white"))
 pps_diff_map
 
@@ -264,18 +103,17 @@ for(i in 1:length(all_states)) {
   new_df$clinton[these_indices] = pps_difference$diff_clinton[i]
 }
 
-## Which states were redder than we thought?
+## poll inaccuracy
 #plot all states with ggplot
 rps_diff_map = ggplot()
 # pps_difference$diff_trump
-rps_diff_map = rps_diff_map + geom_polygon(data=new_df, aes(x=long, y=lat, group=group, fill=trump), colour="white", size=0.5) + scale_fill_gradient(low="pink", high="darkred")
-rps_diff_map = rps_diff_map + ggtitle("Which states were redder than we thought? (Raw)") + xlab("longitude") + ylab("latitude") + theme(plot.title = element_text(family = "Helvetica Neue", color="black", size=20, hjust=0)) + theme(axis.title = element_text(family = "Helvetica Neue", color="black", size=14))
+rps_diff_map = rps_diff_map + geom_polygon(data=new_df, aes(x=long, y=lat, group=group, fill=trump), colour="white", size=0.5) + scale_fill_gradient(low="black", high="orange", name="absolute %\ninaccuracy")
+rps_diff_map = rps_diff_map + ggtitle("Prediction Inaccuracy per State (Raw Polls)") + xlab("longitude") + ylab("latitude") + theme(plot.title = element_text(family = "Helvetica Neue", color="black", size=20, hjust=0, face="bold")) + theme(axis.title = element_text(family = "Helvetica Neue", color="black", size=14))
 rps_diff_map = rps_diff_map + theme(panel.background = element_rect(fill = "white"))
 rps_diff_map
 
 
 # # not so informative:
-# # i don't know if we want this
 # ### NATIONAL LEVEL VISUALIZATIONS
 # 
 # # Get the national percentages from the adjusted polls
