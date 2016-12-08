@@ -244,8 +244,6 @@ rps_diff_map
 
 
 #########################################################################################
-setwd("C:/Users/Cindy/Documents/Davis/JUNIOR/STA 141A/project")
-
 library(tidyverse)
 library(plyr)
 library(reshape2)
@@ -343,3 +341,4 @@ prettyplot(new.florida)
 prettyplot(new.florida[which(new.florida$Date > "2016-09-01"),])
 
 #####################################################################
+
