@@ -136,6 +136,7 @@ rpn_difference <- abs(national_results - national_rpn)
 library(ggplot2)
 
 ### Polls-plus State means
+pps_means = get.state.means(polls_plus_state, raw = FALSE)
 mean_bools <- pps_means$avg_per_trump > pps_means$avg_per_clinton
 state_colors <- sapply(mean_bools, function(bools) {
   if(bools == TRUE) {"red"}
@@ -161,12 +162,13 @@ pps_map
 
 
 ### RPS MEANS
-mean_bools_2 <- pps_means$avg_per_trump > pps_means$avg_per_clinton
+rps_means = get.state.means(raw_plus_state, raw = TRUE)
+mean_bools_2 <- rps_means$avg_per_trump > rps_means$avg_per_clinton
 state_colors_2 <- sapply(mean_bools, function(bools) {
   if(bools == TRUE) {"red"}
   else {"blue"}
 })
-state_colors_2 <- cbind(as.character(pps_means$state), state_colors )
+state_colors_2 <- cbind(as.character(rps_means$state), state_colors )
 blue_states_2 <- state_colors[which(state_colors[,2] == "blue")]
 red_states_2 = state_colors[which(state_colors[,2] == "red")]
 
@@ -225,8 +227,8 @@ names(new_df)[8] = "clinton"
 
 for(i in 1:length(all_states)) {
   these_indices = which(new_df$region==tolower(all_states[i]))
-  new_df$trump[these_indices] = pps_difference$diff_trump[i]
-  new_df$clinton[these_indices] = pps_difference$diff_clinton[i]
+  new_df$trump[these_indices] = rps_difference$diff_trump[i]
+  new_df$clinton[these_indices] = rps_difference$diff_clinton[i]
 }
 
 ## poll inaccuracy
