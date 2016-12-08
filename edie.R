@@ -23,7 +23,7 @@ usa_red = map_data("state", region=red_states)
 pps_map = ggplot()
 pps_map = pps_map + geom_polygon(data=usa_blue, aes(x=long, y=lat, group = group), colour="white", size=0.5, fill="darkblue")
 pps_map = pps_map + geom_polygon(data=usa_red, aes(x=long, y=lat, group = group), colour="white", size=0.5, fill="darkred")
-pps_map = pps_map + ggtitle("2016 Presidential Election - Polls Plus") + xlab("longitude") + ylab("latitude") + theme(plot.title = element_text(family = "Helvetica Neue", color="black", size=25, hjust=0)) + theme(axis.title = element_text(family = "Helvetica Neue", color="black", size=14))
+pps_map = pps_map + ggtitle("2016 Presidential Election - Polls Plus") + xlab("longitude") + ylab("latitude") + theme(plot.title = element_text(family = "Helvetica Neue", color="black", size=25, hjust=0, face="bold")) + theme(axis.title = element_text(family = "Helvetica Neue", color="black", size=14))
 pps_map = pps_map + theme(panel.background = element_rect(fill = "white"))
 pps_map
 
@@ -50,7 +50,7 @@ usa_red_2 = map_data("state", region=red_states_2)
 rps_map = ggplot()
 rps_map = rps_map + geom_polygon(data=usa_blue_2, aes(x=long, y=lat, group = group), colour="white", size=0.5, fill="darkblue")
 rps_map = rps_map + geom_polygon(data=usa_red_2, aes(x=long, y=lat, group = group), colour="white", size=0.5, fill="darkred")
-rps_map = rps_map + ggtitle("2016 Presidential Election - Raw Polls") + xlab("longitude") + ylab("latitude") + theme(plot.title = element_text(family = "Helvetica Neue", color="black", size=25, hjust=0)) + theme(axis.title = element_text(family = "Helvetica Neue", color="black", size=14))
+rps_map = rps_map + ggtitle("2016 Presidential Election - Raw Polls") + xlab("longitude") + ylab("latitude") + theme(plot.title = element_text(family = "Helvetica Neue", color="black", size=25, hjust=0, face="bold")) + theme(axis.title = element_text(family = "Helvetica Neue", color="black", size=14))
 rps_map = rps_map + theme(panel.background = element_rect(fill = "white"))
 rps_map
 
@@ -79,7 +79,7 @@ for(i in 1:length(all_states)) {
 pps_diff_map = ggplot()
 # pps_difference$diff_trump
 pps_diff_map = pps_diff_map + geom_polygon(data=new_df, aes(x=long, y=lat, group=group, fill=trump), colour="white", size=0.5) + scale_fill_gradient(low="black", high="orange", name="absolute %\ninaccuracy")
-pps_diff_map = pps_diff_map + ggtitle("Prediction Inaccuracy per State (Raw Polls)") + xlab("longitude") + ylab("latitude") + theme(plot.title = element_text(family = "Helvetica Neue", color="black", size=20, hjust=0, face="bold")) + theme(axis.title = element_text(family = "Helvetica Neue", color="black", size=14))
+pps_diff_map = pps_diff_map + ggtitle("Prediction Inaccuracy per State (Polls Plus)") + xlab("longitude") + ylab("latitude") + theme(plot.title = element_text(family = "Helvetica Neue", color="black", size=20, hjust=0, face="bold")) + theme(axis.title = element_text(family = "Helvetica Neue", color="black", size=14))
 pps_diff_map = pps_diff_map + theme(panel.background = element_rect(fill = "white"))
 pps_diff_map
 
